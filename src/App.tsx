@@ -1,35 +1,62 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
-import "./App.css";
+import { useState, useMemo, useEffect } from "react";
+import {
+  GlobalStyle,
+  Header,
+  SearchSection,
+  StationList,
+  ContentWrapper,
+  ErrorBoundary,
+  Button,
+} from "./components";
+import { useStations, useDebounce } from "./hooks";
+import { APP_CONFIG } from "./constants";
 
-function App() {
-  const [count, setCount] = useState(0);
+export default function App() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(
+    searchQuery,
+    APP_CONFIG.SEARCH_DEBOUNCE_MS,
+  );
+  const { stations, loading, error, refetch } = useStations();
+
+  // Set document title from environment variable
+  useEffect(() => {
+    document.title = APP_CONFIG.TITLE;
+  }, []);
+
+  // Memoize filtered stations to avoid unnecessary re-computations
+  const filteredStations = useMemo(() => {
+    if (!debouncedSearchQuery.trim()) {
+      return stations;
+    }
+
+    return stations.filter((station) =>
+      station.name
+        .toLowerCase()
+        .includes(debouncedSearchQuery.toLowerCase().trim()),
+    );
+  }, [stations, debouncedSearchQuery]);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <ErrorBoundary>
+      <GlobalStyle />
+      <ContentWrapper>
+        <Header />
+        <SearchSection
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+        />
+        <StationList
+          stations={filteredStations}
+          loading={loading}
+          error={error}
+        />
+        {error && (
+          <Button onClick={refetch} showIcon style={{ marginTop: "16px" }}>
+            Retry
+          </Button>
+        )}
+      </ContentWrapper>
+    </ErrorBoundary>
   );
 }
-
-export default App;
