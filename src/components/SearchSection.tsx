@@ -1,3 +1,4 @@
+import { memo, useCallback } from "react";
 import styled from "styled-components";
 import { HiSearch } from "react-icons/hi";
 
@@ -75,30 +76,38 @@ interface SearchSectionProps {
   onSearchChange: (value: string) => void;
 }
 
-export const SearchSection = ({
-  searchQuery,
-  onSearchChange,
-}: SearchSectionProps) => {
-  return (
-    <>
-      <SelectionSection>
-        <h2>Select a Station</h2>
-        <p>Choose a station to view bookings and manage operations</p>
-      </SelectionSection>
+export const SearchSection = memo<SearchSectionProps>(
+  ({ searchQuery, onSearchChange }) => {
+    const handleSearchChange = useCallback(
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        onSearchChange(e.target.value);
+      },
+      [onSearchChange],
+    );
 
-      <SearchContainer>
-        <SearchIcon>
-          <HiSearch size={20} />
-        </SearchIcon>
-        <SearchInput
-          type="text"
-          placeholder="Search stations..."
-          value={searchQuery}
-          onChange={(e) => onSearchChange(e.target.value)}
-          aria-label="Search stations"
-          role="searchbox"
-        />
-      </SearchContainer>
-    </>
-  );
-};
+    return (
+      <>
+        <SelectionSection>
+          <h2>Select a Station</h2>
+          <p>Choose a station to view bookings and manage operations</p>
+        </SelectionSection>
+
+        <SearchContainer>
+          <SearchIcon>
+            <HiSearch size={20} />
+          </SearchIcon>
+          <SearchInput
+            type="text"
+            placeholder="Search stations..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+            aria-label="Search stations"
+            role="searchbox"
+          />
+        </SearchContainer>
+      </>
+    );
+  },
+);
+
+SearchSection.displayName = "SearchSection";

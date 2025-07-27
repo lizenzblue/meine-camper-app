@@ -1,4 +1,4 @@
-import React from "react";
+import React, { forwardRef, memo } from "react";
 import styled from "styled-components";
 import { MdRefresh } from "react-icons/md";
 
@@ -50,16 +50,17 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
 }
 
-export const Button = ({
-  variant = "primary",
-  showIcon = false,
-  children,
-  ...props
-}: ButtonProps) => {
-  return (
-    <StyledButton $variant={variant} {...props}>
-      {showIcon && <MdRefresh size={16} />}
-      {children}
-    </StyledButton>
-  );
-};
+export const Button = memo(
+  forwardRef<HTMLButtonElement, ButtonProps>(
+    ({ variant = "primary", showIcon = false, children, ...props }, ref) => {
+      return (
+        <StyledButton ref={ref} $variant={variant} {...props}>
+          {showIcon && <MdRefresh size={16} />}
+          {children}
+        </StyledButton>
+      );
+    },
+  ),
+);
+
+Button.displayName = "Button";

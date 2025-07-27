@@ -1,3 +1,4 @@
+import { memo } from "react";
 import styled, { keyframes } from "styled-components";
 
 const spin = keyframes`
@@ -32,11 +33,13 @@ interface LoadingProps {
   message?: string;
 }
 
-export const Loading = ({ message = "Loading..." }: LoadingProps) => {
+export const Loading = memo<LoadingProps>(({ message = "Loading..." }) => {
   return (
-    <LoadingContainer>
-      <Spinner />
+    <LoadingContainer role="status" aria-live="polite">
+      <Spinner aria-hidden="true" />
       <LoadingText>{message}</LoadingText>
     </LoadingContainer>
   );
-};
+});
+
+Loading.displayName = "Loading";

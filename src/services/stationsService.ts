@@ -1,8 +1,20 @@
-import type { Station, StationListItem } from "../types";
+import type { Station, StationListItem, Booking } from "../types";
 import { API_CONFIG, APP_CONFIG, ERROR_MESSAGES } from "../constants";
 
+/**
+ * StationsService - Manages station and booking data with smart caching
+ *
+ * Features:
+ * - Fetches all station data (including bookings) in a single API call
+ * - Caches data for 5 minutes to avoid unnecessary requests
+ * - Provides methods to access stations and bookings without additional API calls
+ * - Automatically filters out excluded stations (ID: 7)
+ */
 export class StationsService {
   private static instance: StationsService;
+  private stationsCache: Station[] | null = null;
+  private cacheTimestamp: number | null = null;
+  private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
   private constructor() {}
 
@@ -11,6 +23,23 @@ export class StationsService {
       StationsService.instance = new StationsService();
     }
     return StationsService.instance;
+  }
+
+  private isCacheValid(): boolean {
+    return (
+      this.stationsCache !== null &&
+      this.cacheTimestamp !== null &&
+      Date.now() - this.cacheTimestamp < this.CACHE_DURATION
+    );
+  }
+
+  private setCacheData(stations: Station[]): void {
+    this.stationsCache = stations;
+    this.cacheTimestamp = Date.now();
+  }
+
+  private getCachedData(): Station[] | null {
+    return this.isCacheValid() ? this.stationsCache : null;
   }
 
   private async fetchWithTimeout(
@@ -53,6 +82,14 @@ export class StationsService {
   }
 
   async getAllStations(): Promise<Station[]> {
+    // Check cache first
+    const cachedData = this.getCachedData();
+    if (cachedData) {
+      return cachedData.filter(
+        (station) => !APP_CONFIG.EXCLUDED_STATION_IDS.includes(station.id),
+      );
+    }
+
     try {
       const response = await this.fetchWithTimeout(
         `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.STATIONS}`,
@@ -63,6 +100,9 @@ export class StationsService {
       }
 
       const stations: Station[] = await response.json();
+
+      // Cache the full data (including excluded stations)
+      this.setCacheData(stations);
 
       return stations.filter(
         (station) => !APP_CONFIG.EXCLUDED_STATION_IDS.includes(station.id),
@@ -86,22 +126,41 @@ export class StationsService {
 
   async getStationById(id: string): Promise<Station | null> {
     try {
-      const response = await this.fetchWithTimeout(
-        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.STATIONS}/${id}`,
-      );
+      // First try to get from cache or fetch all stations
+      const allStations = await this.getAllStations();
 
-      if (!response.ok) {
-        if (response.status === 404) {
-          return null;
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const station: Station = await response.json();
-      return station;
+      // Find the station in the cached data
+      const station = allStations.find((station) => station.id === id);
+      return station || null;
     } catch (error) {
       this.handleApiError(error, `Failed to fetch station with id ${id}`);
     }
+  }
+
+  async getBookingsForStation(stationId: string): Promise<Booking[]> {
+    try {
+      const station = await this.getStationById(stationId);
+      return station?.bookings || [];
+    } catch (error) {
+      this.handleApiError(
+        error,
+        `Failed to fetch bookings for station ${stationId}`,
+      );
+    }
+  }
+
+  async getAllBookings(): Promise<Booking[]> {
+    try {
+      const stations = await this.getAllStations();
+      return stations.flatMap((station) => station.bookings);
+    } catch (error) {
+      this.handleApiError(error, "Failed to fetch all bookings");
+    }
+  }
+
+  clearCache(): void {
+    this.stationsCache = null;
+    this.cacheTimestamp = null;
   }
 }
 

@@ -1,3 +1,4 @@
+import { memo, useCallback } from "react";
 import styled from "styled-components";
 import type { StationListItem } from "../types";
 import { Loading } from "./Loading";
@@ -25,7 +26,7 @@ const StationListContainer = styled.div`
   }
 `;
 
-const StationCard = styled.div`
+const StyledStationCard = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -79,53 +80,92 @@ interface StationListProps {
   stations: StationListItem[];
   loading?: boolean;
   error?: string | null;
+  onStationSelect?: (stationId: string) => void;
 }
 
-export const StationList = ({ stations, loading, error }: StationListProps) => {
-  if (loading) {
-    return (
-      <>
-        <RecommendedTitle>Recommended Stations</RecommendedTitle>
-        <Loading message="Loading stations..." />
-      </>
-    );
-  }
+// Station Card Component
+const StationCard = memo<{
+  station: StationListItem;
+  onSelect: (id: string) => void;
+}>(({ station, onSelect }) => {
+  const handleClick = useCallback(() => {
+    onSelect(station.id);
+  }, [onSelect, station.id]);
 
-  if (error) {
-    return (
-      <>
-        <RecommendedTitle>Recommended Stations</RecommendedTitle>
-        <div style={{ color: "#e53e3e", padding: "16px" }}>Error: {error}</div>
-      </>
-    );
-  }
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        onSelect(station.id);
+      }
+    },
+    [onSelect, station.id],
+  );
 
   return (
-    <>
-      <RecommendedTitle>Recommended Stations</RecommendedTitle>
-      <StationListContainer>
-        {stations.map((station) => (
-          <StationCard
-            key={station.id}
-            role="button"
-            tabIndex={0}
-            aria-label={`Select ${station.name} station`}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                // Handle station selection
-                console.log("Selected station:", station.name);
-              }
-            }}
-          >
-            <StationIcon>
-              <HiLocationMarker size={24} />
-            </StationIcon>
-            <StationInfo>
-              <h4>{station.name}</h4>
-            </StationInfo>
-          </StationCard>
-        ))}
-      </StationListContainer>
-    </>
+    <StyledStationCard
+      role="button"
+      tabIndex={0}
+      aria-label={`Select ${station.name} station`}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+    >
+      <StationIcon>
+        <HiLocationMarker size={24} />
+      </StationIcon>
+      <StationInfo>
+        <h4>{station.name}</h4>
+      </StationInfo>
+    </StyledStationCard>
   );
-};
+});
+
+StationCard.displayName = "StationCard";
+
+export const StationList = memo<StationListProps>(
+  ({ stations, loading, error, onStationSelect }) => {
+    const handleStationSelect = useCallback(
+      (stationId: string) => {
+        onStationSelect?.(stationId);
+      },
+      [onStationSelect],
+    );
+
+    if (loading) {
+      return (
+        <>
+          <RecommendedTitle>Recommended Stations</RecommendedTitle>
+          <Loading message="Loading stations..." />
+        </>
+      );
+    }
+
+    if (error) {
+      return (
+        <>
+          <RecommendedTitle>Recommended Stations</RecommendedTitle>
+          <div style={{ color: "#e53e3e", padding: "16px" }}>
+            Error: {error}
+          </div>
+        </>
+      );
+    }
+
+    return (
+      <>
+        <RecommendedTitle>Recommended Stations</RecommendedTitle>
+        <StationListContainer>
+          {stations.map((station) => (
+            <StationCard
+              key={station.id}
+              station={station}
+              onSelect={handleStationSelect}
+            />
+          ))}
+        </StationListContainer>
+      </>
+    );
+  },
+);
+
+StationList.displayName = "StationList";

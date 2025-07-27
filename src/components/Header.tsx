@@ -1,20 +1,30 @@
+import { memo } from "react";
 import styled from "styled-components";
-import { MdDirectionsCarFilled } from "react-icons/md";
+import { MdDirectionsCarFilled, MdEdit } from "react-icons/md";
 import { APP_CONFIG } from "../constants";
+import { Button } from "./UI/Button";
 
 const HeaderContainer = styled.header`
   width: 100%;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
-  margin-bottom: 48px;
+  margin-bottom: 24px;
+  padding: 16px 0;
+`;
+
+const HeaderContent = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
 `;
 
 const HeaderIcon = styled.div`
   background-color: #f0f2f5;
-  border-radius: 8px;
-  width: 40px;
-  height: 40px;
+  border-radius: 12px;
+  width: 48px;
+  height: 48px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -24,28 +34,50 @@ const HeaderIcon = styled.div`
 
 const HeaderText = styled.div`
   h1 {
-    font-size: 16px;
-    font-weight: 600;
+    font-size: 18px;
+    font-weight: 700;
     margin: 0;
     color: #1a202c;
   }
   p {
     font-size: 14px;
     color: #718096;
-    margin: 0;
+    margin: 2px 0 0 0;
   }
 `;
 
-export const Header = () => {
-  return (
-    <HeaderContainer>
-      <HeaderIcon>
-        <MdDirectionsCarFilled size={20} />
-      </HeaderIcon>
-      <HeaderText>
-        <h1>{APP_CONFIG.TITLE}</h1>
-        <p>{APP_CONFIG.DESCRIPTION}</p>
-      </HeaderText>
-    </HeaderContainer>
-  );
-};
+interface HeaderProps {
+  stationName?: string;
+  stationId?: string;
+  onChangeStation?: () => void;
+}
+
+export const Header = memo<HeaderProps>(
+  ({ stationName, stationId, onChangeStation }) => {
+    return (
+      <HeaderContainer>
+        <HeaderContent>
+          <HeaderIcon>
+            <MdDirectionsCarFilled size={20} />
+          </HeaderIcon>
+          <HeaderText>
+            <h1>{stationName || APP_CONFIG.TITLE}</h1>
+            <p>
+              {stationName
+                ? `Station ID: ${stationId}`
+                : APP_CONFIG.DESCRIPTION}
+            </p>
+          </HeaderText>
+        </HeaderContent>
+        {onChangeStation && (
+          <Button variant="secondary" onClick={onChangeStation}>
+            <MdEdit />
+            Change Station
+          </Button>
+        )}
+      </HeaderContainer>
+    );
+  },
+);
+
+Header.displayName = "Header";
