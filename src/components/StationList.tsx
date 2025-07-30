@@ -1,67 +1,45 @@
 import { memo, useCallback } from "react";
 import styled from "styled-components";
 import type { StationListItem } from "../types";
+import { useGlobalBookings } from "../contexts";
 import { Loading } from "./Loading";
 import { HiLocationMarker } from "react-icons/hi";
+import { ErrorMessage, ClickableCard } from "./UI";
+import { theme } from "../styles/theme";
 
 const RecommendedTitle = styled.h3`
   width: 100%;
-  font-size: 16px;
-  font-weight: 600;
-  color: #4a5568;
-  margin-bottom: 16px;
+  font-size: ${theme.typography.fontSizes.base};
+  font-weight: ${theme.typography.fontWeights.semibold};
+  color: ${theme.colors.text.muted};
+  margin-bottom: ${theme.spacing.lg};
   text-align: left;
 `;
 
 const StationListContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: ${theme.spacing.lg};
   width: 100%;
 
-  @media (min-width: 768px) {
+  @media (min-width: ${theme.breakpoints.md}) {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 24px;
+    gap: ${theme.spacing["2xl"]};
   }
 `;
 
-const StyledStationCard = styled.div`
+const StyledStationCard = styled(ClickableCard)`
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 12px;
-  padding: 24px 16px;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  background-color: #fff;
-  cursor: pointer;
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s,
-    border-color 0.2s;
+  gap: ${theme.spacing.md};
   text-align: center;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    border-color: #4a90e2;
-  }
-
-  &:focus {
-    outline: 2px solid #4a90e2;
-    outline-offset: 2px;
-  }
-
-  &:focus-visible {
-    outline: 2px solid #4a90e2;
-    outline-offset: 2px;
-  }
 `;
 
 const StationIcon = styled.div`
-  color: #4a90e2;
+  color: ${theme.colors.primary};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -69,10 +47,27 @@ const StationIcon = styled.div`
 
 const StationInfo = styled.div`
   h4 {
-    font-size: 18px;
-    font-weight: 600;
+    font-size: ${theme.typography.fontSizes.lg};
+    font-weight: ${theme.typography.fontWeights.semibold};
     margin: 0;
-    color: #2d3748;
+    color: ${theme.colors.text.secondary};
+  }
+`;
+
+const BookingIndicator = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${theme.spacing.xs};
+  font-size: ${theme.typography.fontSizes.xs};
+  color: ${theme.colors.success};
+  font-weight: ${theme.typography.fontWeights.medium};
+
+  &::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: ${theme.colors.success};
   }
 `;
 
@@ -83,11 +78,14 @@ interface StationListProps {
   onStationSelect?: (stationId: string) => void;
 }
 
-// Station Card Component
 const StationCard = memo<{
   station: StationListItem;
   onSelect: (id: string) => void;
 }>(({ station, onSelect }) => {
+  const { getBookingsForStation } = useGlobalBookings();
+  const stationBookings = getBookingsForStation(station.id);
+  const hasBookings = stationBookings.length > 0;
+
   const handleClick = useCallback(() => {
     onSelect(station.id);
   }, [onSelect, station.id]);
@@ -115,6 +113,12 @@ const StationCard = memo<{
       </StationIcon>
       <StationInfo>
         <h4>{station.name}</h4>
+        {hasBookings && (
+          <BookingIndicator>
+            {stationBookings.length} booking
+            {stationBookings.length !== 1 ? "s" : ""}
+          </BookingIndicator>
+        )}
       </StationInfo>
     </StyledStationCard>
   );
@@ -144,9 +148,7 @@ export const StationList = memo<StationListProps>(
       return (
         <>
           <RecommendedTitle>Recommended Stations</RecommendedTitle>
-          <div style={{ color: "#e53e3e", padding: "16px" }}>
-            Error: {error}
-          </div>
+          <ErrorMessage message={`Error: ${error}`} />
         </>
       );
     }
@@ -167,5 +169,3 @@ export const StationList = memo<StationListProps>(
     );
   },
 );
-
-StationList.displayName = "StationList";

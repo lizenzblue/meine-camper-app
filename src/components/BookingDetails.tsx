@@ -1,191 +1,86 @@
 import styled from "styled-components";
-import { MdDateRange, MdSchedule } from "react-icons/md";
+import { useState } from "react";
 import type { Booking } from "../types";
+import { BookingModal } from "./BookingModal";
+import { Card, InteractiveCard, BookingTypeBadge, DateDisplay } from "./UI";
+import { theme } from "../styles/theme";
+import { getBookingType } from "../utils/bookingUtils";
+import { getBookingsForDate } from "../utils/dateUtils";
 
-const BookingDetailsSection = styled.div`
-  background: white;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e2e8f0;
-
-  @media (min-width: 768px) {
-    padding: 32px;
-  }
-`;
+const BookingDetailsSection = Card;
 
 const SelectedDate = styled.div`
-  margin-bottom: 20px;
+  margin-bottom: ${theme.spacing.xl};
   text-align: center;
-  padding: 16px;
-  background: #667eea;
-  border-radius: 12px;
+  padding: ${theme.spacing.lg};
+  background: ${theme.colors.accent};
+  border-radius: ${theme.borderRadius.md};
   color: white;
 
   h4 {
-    margin: 0 0 4px 0;
-    font-size: 18px;
-    font-weight: 600;
-
-    @media (min-width: 768px) {
-      font-size: 20px;
-    }
+    margin: 0 0 ${theme.spacing.xs} 0;
+    font-size: ${theme.typography.fontSizes.lg};
+    font-weight: ${theme.typography.fontWeights.semibold};
   }
 
   p {
     margin: 0;
-    font-size: 14px;
+    font-size: ${theme.typography.fontSizes.sm};
     opacity: 0.9;
-
-    @media (min-width: 768px) {
-      font-size: 15px;
-    }
   }
 `;
 
-const BookingCard = styled.div`
-  background: #f8fafc;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 16px;
-  border: 1px solid #e2e8f0;
+const BookingCard = styled(InteractiveCard)`
+  margin-bottom: ${theme.spacing.md};
 
   &:last-child {
     margin-bottom: 0;
-  }
-
-  @media (min-width: 768px) {
-    padding: 20px;
   }
 `;
 
 const BookingHeader = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-  gap: 8px;
+  align-items: center;
+  margin-bottom: ${theme.spacing.sm};
 
   h4 {
     margin: 0;
-    color: #1a202c;
-    font-size: 16px;
-    font-weight: 600;
-
-    @media (min-width: 768px) {
-      font-size: 18px;
-    }
+    color: ${theme.colors.text.primary};
+    font-size: ${theme.typography.fontSizes.base};
+    font-weight: ${theme.typography.fontWeights.semibold};
   }
 `;
 
-const ReturnBadge = styled.span<{ isReturn: boolean }>`
-  display: inline-block;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  flex-shrink: 0;
-
-  ${({ isReturn }) =>
-    isReturn
-      ? `
-    background-color: #e3f2fd;
-    color: #1976d2;
-  `
-      : `
-    background-color: #e8f5e8;
-    color: #2e7d32;
-  `}
-
-  @media (min-width: 768px) {
-    font-size: 13px;
-    padding: 6px 10px;
-  }
-`;
-
-const BookingInfo = styled.div`
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
-  margin-bottom: 16px;
-
-  @media (min-width: 480px) {
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-  }
-`;
-
-const InfoItem = styled.div`
+const TimeInfo = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: #4a5568;
-  font-weight: 500;
-  padding: 8px 12px;
-  background: white;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-
-  svg {
-    width: 16px;
-    height: 16px;
-    color: #718096;
-  }
-
-  @media (min-width: 768px) {
-    font-size: 15px;
-    padding: 10px 16px;
-  }
+  gap: ${theme.spacing.sm};
+  margin-top: ${theme.spacing.xs};
+  font-size: ${theme.typography.fontSizes.sm};
+  color: ${theme.colors.text.light};
 `;
 
-const BookingId = styled.div`
-  padding: 12px 16px;
-  background: white;
-  border-radius: 8px;
-  font-size: 12px;
-  color: #4a5568;
-  font-family: monospace;
-  font-weight: 600;
-  border: 1px solid #e2e8f0;
-  text-align: center;
-
-  @media (min-width: 768px) {
-    font-size: 13px;
-    padding: 14px 18px;
-  }
+const TimeRange = styled.span`
+  font-weight: ${theme.typography.fontWeights.medium};
+  color: ${theme.colors.text.muted};
 `;
 
 const EmptyState = styled.div`
   text-align: center;
-  padding: 40px 20px;
-  color: #718096;
+  padding: ${theme.spacing["4xl"]} ${theme.spacing.xl};
+  color: ${theme.colors.text.light};
 
   h3 {
-    margin: 0 0 8px 0;
-    color: #4a5568;
-    font-size: 18px;
-    font-weight: 600;
+    margin: 0 0 ${theme.spacing.sm} 0;
+    color: ${theme.colors.text.muted};
+    font-size: ${theme.typography.fontSizes.lg};
+    font-weight: ${theme.typography.fontWeights.semibold};
   }
 
   p {
     margin: 0;
-    font-size: 14px;
-  }
-
-  @media (min-width: 768px) {
-    padding: 50px 30px;
-
-    h3 {
-      font-size: 20px;
-    }
-
-    p {
-      font-size: 16px;
-    }
+    font-size: ${theme.typography.fontSizes.sm};
   }
 `;
 
@@ -198,59 +93,87 @@ export const BookingDetails = ({
   selectedDate,
   bookings,
 }: BookingDetailsProps) => {
-  // Get bookings for selected date
-  const getBookingsForDate = (date: Date): Booking[] => {
-    return bookings.filter((booking) => {
-      const startDate = new Date(booking.startDate);
-      const endDate = new Date(booking.endDate);
-      return date >= startDate && date <= endDate;
-    });
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+
+  const selectedDateBookings = getBookingsForDate(bookings, selectedDate);
+
+  const handleBookingClick = (booking: Booking) => {
+    setSelectedBooking(booking);
   };
 
-  const selectedDateBookings = getBookingsForDate(selectedDate);
+  const closeModal = () => {
+    setSelectedBooking(null);
+  };
 
   return (
-    <BookingDetailsSection>
-      <SelectedDate>
-        <h4>
-          {selectedDate.toLocaleDateString("en-US", { weekday: "short" })}{" "}
-          {selectedDate.getDate()}
-        </h4>
-        <p>
-          {selectedDate.toLocaleDateString("en-US", {
-            weekday: "long",
-            month: "long",
-            day: "numeric",
-          })}
-        </p>
-      </SelectedDate>
+    <>
+      <BookingDetailsSection>
+        <SelectedDate>
+          <h4>
+            {selectedDate.toLocaleDateString("en-US", { weekday: "short" })}{" "}
+            {selectedDate.getDate()}
+          </h4>
+          <p>
+            {selectedDate.toLocaleDateString("en-US", {
+              weekday: "long",
+              month: "long",
+              day: "numeric",
+            })}
+          </p>
+        </SelectedDate>
 
-      {selectedDateBookings.length > 0 ? (
-        selectedDateBookings.map((booking) => (
-          <BookingCard key={booking.id}>
-            <BookingHeader>
-              <h4>{booking.customerName}</h4>
-              <ReturnBadge isReturn={true}>Return</ReturnBadge>
-            </BookingHeader>
-            <BookingInfo>
-              <InfoItem>
-                <MdDateRange />
-                Start: {new Date(booking.startDate).toLocaleDateString()}
-              </InfoItem>
-              <InfoItem>
-                <MdSchedule />
-                End: {new Date(booking.endDate).toLocaleDateString()}
-              </InfoItem>
-            </BookingInfo>
-            <BookingId>ID: {booking.id}</BookingId>
-          </BookingCard>
-        ))
-      ) : (
-        <EmptyState>
-          <h3>No Bookings</h3>
-          <p>No bookings for this date.</p>
-        </EmptyState>
+        {selectedDateBookings.length > 0 ? (
+          <div>
+            {selectedDateBookings.map((booking) => {
+              const bookingType = getBookingType(booking, selectedDate);
+              const startDate = new Date(booking.startDate);
+              const endDate = new Date(booking.endDate);
+
+              return (
+                <BookingCard
+                  key={booking.id}
+                  onClick={() => handleBookingClick(booking)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleBookingClick(booking);
+                    }
+                  }}
+                  aria-label={`View details for ${booking.customerName}'s booking`}
+                >
+                  <BookingHeader>
+                    <h4>{booking.customerName}</h4>
+                    <BookingTypeBadge type={bookingType} />
+                  </BookingHeader>
+                  <TimeInfo>
+                    <TimeRange>
+                      <DateDisplay date={startDate} format="time" />
+                      {" - "}
+                      <DateDisplay date={endDate} format="time" />
+                    </TimeRange>
+                  </TimeInfo>
+                </BookingCard>
+              );
+            })}
+          </div>
+        ) : (
+          <EmptyState>
+            <h3>No Bookings</h3>
+            <p>No bookings for this date.</p>
+          </EmptyState>
+        )}
+      </BookingDetailsSection>
+
+      {selectedBooking && (
+        <BookingModal
+          booking={selectedBooking}
+          isOpen={!!selectedBooking}
+          onClose={closeModal}
+          viewDate={selectedDate}
+        />
       )}
-    </BookingDetailsSection>
+    </>
   );
 };

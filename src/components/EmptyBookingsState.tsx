@@ -1,31 +1,29 @@
 import styled from "styled-components";
+import { theme, cardStyles } from "../styles/theme";
 
 const EmptyStateContainer = styled.div`
-  background: white;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e2e8f0;
+  ${cardStyles}
+  padding: ${theme.spacing["2xl"]};
   text-align: center;
-  color: #718096;
+  color: ${theme.colors.text.light};
 
   h3 {
-    margin: 0 0 8px 0;
-    color: #4a5568;
-    font-size: 18px;
-    font-weight: 600;
+    margin: 0 0 ${theme.spacing.sm} 0;
+    color: ${theme.colors.text.muted};
+    font-size: ${theme.typography.fontSizes.lg};
+    font-weight: ${theme.typography.fontWeights.semibold};
   }
 
   p {
     margin: 0;
-    font-size: 14px;
+    font-size: ${theme.typography.fontSizes.sm};
   }
 
-  @media (min-width: 768px) {
+  @media (min-width: ${theme.breakpoints.md}) {
     padding: 50px 30px;
 
     h3 {
-      font-size: 20px;
+      font-size: ${theme.typography.fontSizes.xl};
     }
 
     p {

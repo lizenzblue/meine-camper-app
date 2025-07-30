@@ -1,43 +1,32 @@
-import React, { Component } from "react";
+import { Component } from "react";
 import type { ReactNode } from "react";
 import styled from "styled-components";
+import { Button } from "./UI";
+import { theme } from "../styles/theme";
 
 const ErrorContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
-  padding: 32px;
-  border: 1px solid #fed7d7;
-  border-radius: 8px;
-  background-color: #fef5e7;
-  margin: 16px 0;
+  gap: ${theme.spacing.lg};
+  padding: ${theme.spacing["3xl"]};
+  border: 1px solid ${theme.colors.errorLight};
+  border-radius: ${theme.borderRadius.sm};
+  background-color: ${theme.colors.errorBg};
+  margin: ${theme.spacing.lg} 0;
 `;
 
 const ErrorTitle = styled.h3`
-  color: #c53030;
+  color: ${theme.colors.error};
   margin: 0;
-  font-size: 18px;
+  font-size: ${theme.typography.fontSizes.lg};
 `;
 
 const ErrorMessage = styled.p`
-  color: #744210;
+  color: ${theme.colors.text.light};
+  font-size: ${theme.typography.fontSizes.base};
   margin: 0;
   text-align: center;
-`;
-
-const RetryButton = styled.button`
-  padding: 8px 16px;
-  background-color: #4a90e2;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-
-  &:hover {
-    background-color: #357abd;
-  }
 `;
 
 interface Props {
@@ -71,9 +60,9 @@ export class ErrorBoundary extends Component<Props, State> {
             We're sorry, but something unexpected happened. Please try
             refreshing the page.
           </ErrorMessage>
-          <RetryButton onClick={() => window.location.reload()}>
+          <Button variant="primary" onClick={() => window.location.reload()}>
             Refresh Page
-          </RetryButton>
+          </Button>
         </ErrorContainer>
       );
     }

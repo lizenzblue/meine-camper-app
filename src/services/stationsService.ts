@@ -1,20 +1,11 @@
 import type { Station, StationListItem, Booking } from "../types";
 import { API_CONFIG, APP_CONFIG, ERROR_MESSAGES } from "../constants";
 
-/**
- * StationsService - Manages station and booking data with smart caching
- *
- * Features:
- * - Fetches all station data (including bookings) in a single API call
- * - Caches data for 5 minutes to avoid unnecessary requests
- * - Provides methods to access stations and bookings without additional API calls
- * - Automatically filters out excluded stations (ID: 7)
- */
-export class StationsService {
+class StationsService {
   private static instance: StationsService;
   private stationsCache: Station[] | null = null;
   private cacheTimestamp: number | null = null;
-  private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+  private readonly CACHE_DURATION = 5 * 60 * 1000;
 
   private constructor() {}
 
@@ -82,7 +73,6 @@ export class StationsService {
   }
 
   async getAllStations(): Promise<Station[]> {
-    // Check cache first
     const cachedData = this.getCachedData();
     if (cachedData) {
       return cachedData.filter(
@@ -101,7 +91,6 @@ export class StationsService {
 
       const stations: Station[] = await response.json();
 
-      // Cache the full data (including excluded stations)
       this.setCacheData(stations);
 
       return stations.filter(
@@ -126,10 +115,8 @@ export class StationsService {
 
   async getStationById(id: string): Promise<Station | null> {
     try {
-      // First try to get from cache or fetch all stations
       const allStations = await this.getAllStations();
 
-      // Find the station in the cached data
       const station = allStations.find((station) => station.id === id);
       return station || null;
     } catch (error) {

@@ -1,24 +1,26 @@
 import { memo, useCallback } from "react";
 import styled from "styled-components";
 import { HiSearch } from "react-icons/hi";
+import { theme } from "../styles/theme";
+import { Input } from "./UI";
 
 const SelectionSection = styled.section`
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: ${theme.spacing["2xl"]};
   max-width: 560px;
 
   h2 {
-    font-size: 28px;
-    font-weight: 600;
-    margin: 0 0 8px 0;
-    color: #1a202c;
+    font-size: ${theme.typography.fontSizes["2xl"]};
+    font-weight: ${theme.typography.fontWeights.semibold};
+    margin: 0 0 ${theme.spacing.sm} 0;
+    color: ${theme.colors.text.primary};
   }
 
   p {
-    font-size: 16px;
-    color: #718096;
+    font-size: ${theme.typography.fontSizes.base};
+    color: ${theme.colors.text.light};
     margin: 0;
-    line-height: 1.5;
+    line-height: ${theme.typography.lineHeights.normal};
   }
 `;
 
@@ -26,48 +28,26 @@ const SearchContainer = styled.div`
   position: relative;
   width: 100%;
   max-width: 560px;
-  margin-bottom: 48px;
+  margin-bottom: ${theme.spacing["4xl"]};
 `;
 
 const SearchIcon = styled.div`
   position: absolute;
-  left: 16px;
+  left: ${theme.spacing.lg};
   top: 50%;
   transform: translateY(-50%);
-  color: #a0aec0;
+  color: ${theme.colors.text.placeholder};
   display: flex;
   align-items: center;
   pointer-events: none;
+  z-index: 1;
 `;
 
-const SearchInput = styled.input`
-  width: 100%;
-  padding: 14px 16px 14px 48px;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  font-size: 16px;
-  box-sizing: border-box;
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
-
-  &::placeholder {
-    color: #a0aec0;
-  }
-
-  &:focus {
-    outline: none;
-    border-color: #4a90e2;
-    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
-  }
-
-  &:focus-visible {
-    outline: 2px solid #4a90e2;
-    outline-offset: 2px;
-  }
-
+const StyledSearchInput = styled(Input)`
+  padding-left: ${theme.spacing["4xl"]};
+  
   &:focus + ${SearchIcon} {
-    color: #4a90e2;
+    color: ${theme.colors.primary};
   }
 `;
 
@@ -96,7 +76,7 @@ export const SearchSection = memo<SearchSectionProps>(
           <SearchIcon>
             <HiSearch size={20} />
           </SearchIcon>
-          <SearchInput
+          <StyledSearchInput
             type="text"
             placeholder="Search stations..."
             value={searchQuery}
@@ -109,5 +89,3 @@ export const SearchSection = memo<SearchSectionProps>(
     );
   },
 );
-
-SearchSection.displayName = "SearchSection";

@@ -3,45 +3,46 @@ import styled from "styled-components";
 import { MdDirectionsCarFilled, MdEdit } from "react-icons/md";
 import { APP_CONFIG } from "../constants";
 import { Button } from "./UI/Button";
+import { theme } from "../styles/theme";
 
 const HeaderContainer = styled.header`
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 24px;
-  padding: 16px 0;
+  gap: ${theme.spacing.md};
+  margin-bottom: ${theme.spacing["2xl"]};
+  padding: ${theme.spacing.lg} 0;
 `;
 
 const HeaderContent = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: ${theme.spacing.md};
 `;
 
 const HeaderIcon = styled.div`
-  background-color: #f0f2f5;
-  border-radius: 12px;
+  background-color: ${theme.colors.background.light};
+  border-radius: ${theme.borderRadius.md};
   width: 48px;
   height: 48px;
   display: flex;
   justify-content: center;
   align-items: center;
-  color: #555;
+  color: ${theme.colors.text.muted};
   flex-shrink: 0;
 `;
 
 const HeaderText = styled.div`
   h1 {
-    font-size: 18px;
-    font-weight: 700;
+    font-size: ${theme.typography.fontSizes.lg};
+    font-weight: ${theme.typography.fontWeights.semibold};
     margin: 0;
-    color: #1a202c;
+    color: ${theme.colors.text.primary};
   }
   p {
-    font-size: 14px;
-    color: #718096;
+    font-size: ${theme.typography.fontSizes.sm};
+    color: ${theme.colors.text.light};
     margin: 2px 0 0 0;
   }
 `;
@@ -79,5 +80,3 @@ export const Header = memo<HeaderProps>(
     );
   },
 );
-
-Header.displayName = "Header";

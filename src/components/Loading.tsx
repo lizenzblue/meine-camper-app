@@ -1,5 +1,6 @@
 import { memo } from "react";
 import styled, { keyframes } from "styled-components";
+import { theme } from "../styles/theme";
 
 const spin = keyframes`
   0% { transform: rotate(0deg); }
@@ -10,13 +11,13 @@ const LoadingContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
-  padding: 32px;
+  gap: ${theme.spacing.lg};
+  padding: ${theme.spacing["3xl"]};
 `;
 
 const Spinner = styled.div`
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #4a90e2;
+  border: 3px solid ${theme.colors.background.light};
+  border-top: 3px solid ${theme.colors.primary};
   border-radius: 50%;
   width: 32px;
   height: 32px;
@@ -24,8 +25,8 @@ const Spinner = styled.div`
 `;
 
 const LoadingText = styled.p`
-  color: #718096;
-  font-size: 14px;
+  color: ${theme.colors.text.light};
+  font-size: ${theme.typography.fontSizes.sm};
   margin: 0;
 `;
 
@@ -41,5 +42,3 @@ export const Loading = memo<LoadingProps>(({ message = "Loading..." }) => {
     </LoadingContainer>
   );
 });
-
-Loading.displayName = "Loading";

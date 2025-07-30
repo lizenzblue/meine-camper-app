@@ -1,18 +1,19 @@
 import styled from "styled-components";
 import { useState } from "react";
 import type { Station } from "../types";
-import { useStationBookings } from "../hooks";
+import { useGlobalBookings } from "../contexts";
 import { Loading } from "./Loading";
 import { StationCalendar } from "./StationCalendar";
 import { BookingDetails } from "./BookingDetails";
 import { EmptyBookingsState } from "./EmptyBookingsState";
+import { ErrorMessage } from "./UI";
 
 type ValuePiece = Date | null;
 type Value = ValuePiece | [ValuePiece, ValuePiece];
 
 const DetailContainer = styled.div`
   width: 100%;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -26,33 +27,25 @@ const DetailContainer = styled.div`
   }
 `;
 
+const ErrorContainer = styled(ErrorMessage)`
+  grid-column: 1 / -1;
+`;
+
 interface StationDetailProps {
   station: Station;
 }
 
 export const StationDetail = ({ station }: StationDetailProps) => {
-  const { bookings, loading, error } = useStationBookings(station.id);
+  const { getBookingsForStation, loading, error } = useGlobalBookings();
   const [selectedDate, setSelectedDate] = useState<Value>(new Date());
+
+  const bookings = getBookingsForStation(station.id);
 
   return (
     <DetailContainer>
       {loading && <Loading message="Loading bookings..." />}
 
-      {error && (
-        <div
-          style={{
-            color: "#e53e3e",
-            padding: "20px",
-            textAlign: "center",
-            background: "#fed7d7",
-            borderRadius: "12px",
-            border: "2px solid #feb2b2",
-            gridColumn: "1 / -1",
-          }}
-        >
-          <strong>Error loading bookings:</strong> {error}
-        </div>
-      )}
+      {error && <ErrorContainer message={`Loading bookings: ${error}`} />}
 
       {!loading && !error && (
         <>

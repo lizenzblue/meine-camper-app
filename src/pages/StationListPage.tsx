@@ -15,7 +15,6 @@ export function StationListPage() {
 
   const { stations, loading, error, refetch } = useStations();
 
-  // Memoize filtered stations to avoid unnecessary re-computations
   const filteredStations = useMemo(() => {
     if (!debouncedSearchQuery.trim()) {
       return stations;
@@ -46,7 +45,7 @@ export function StationListPage() {
         onStationSelect={handleStationSelect}
       />
       {error && (
-        <Button onClick={refetch} showIcon style={{ marginTop: "16px" }}>
+        <Button onClick={refetch} style={{ marginTop: "16px" }}>
           Retry
         </Button>
       )}

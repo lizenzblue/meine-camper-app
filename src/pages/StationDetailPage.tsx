@@ -1,53 +1,28 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useParams, useNavigate, Navigate } from "react-router-dom";
 import { Header, StationDetail, Loading } from "../components";
 import { stationsService } from "../services/stationsService";
+import { useAsyncData } from "../hooks/useAsyncData";
 import type { Station } from "../types";
 
 export function StationDetailPage() {
   const { stationId } = useParams<{ stationId: string }>();
   const navigate = useNavigate();
-  const [selectedStation, setSelectedStation] = useState<Station | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: selectedStation,
+    loading,
+    error,
+    executeAsync,
+  } = useAsyncData<Station | null>(null);
 
-  // Fetch station data
   useEffect(() => {
     if (!stationId) {
       return;
     }
 
-    let isMounted = true;
+    executeAsync(() => stationsService.getStationById(stationId));
+  }, [stationId, executeAsync]);
 
-    const fetchStation = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const station = await stationsService.getStationById(stationId);
-
-        if (isMounted) {
-          setSelectedStation(station);
-        }
-      } catch (err) {
-        if (isMounted) {
-          setError("Failed to load station details");
-          console.error("Error fetching station:", err);
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    fetchStation();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [stationId]);
-
-  // Redirect to home if no stationId
   if (!stationId) {
     return <Navigate to="/" replace />;
   }
@@ -56,7 +31,6 @@ export function StationDetailPage() {
     navigate("/");
   };
 
-  // Loading state
   if (loading) {
     return (
       <>
@@ -66,7 +40,6 @@ export function StationDetailPage() {
     );
   }
 
-  // Error state
   if (error || !selectedStation) {
     return (
       <>
@@ -88,7 +61,6 @@ export function StationDetailPage() {
     );
   }
 
-  // Success state
   return (
     <>
       <Header

@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import type { StationListItem } from "../types";
 import { stationsService } from "../services/stationsService";
+import { useAsyncData } from "./useAsyncData";
 
 interface UseStationsReturn {
   stations: StationListItem[];
@@ -10,28 +11,21 @@ interface UseStationsReturn {
 }
 
 export const useStations = (): UseStationsReturn => {
-  const [stations, setStations] = useState<StationListItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: stations,
+    loading,
+    error,
+    executeAsync,
+  } = useAsyncData<StationListItem[]>([]);
 
-  const fetchStations = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const stationsList = await stationsService.getStationsList();
-      setStations(stationsList);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "An unknown error occurred",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+  const fetchStations = useCallback(
+    () => executeAsync(() => stationsService.getStationsList()),
+    [executeAsync],
+  );
 
   useEffect(() => {
     fetchStations();
-  }, []);
+  }, [fetchStations]);
 
   return {
     stations,

@@ -1,6 +1,8 @@
 import styled from "styled-components";
 import Calendar from "react-calendar";
 import type { Booking } from "../types";
+import { hasBookingsOnDate } from "../utils/dateUtils";
+import { ErrorMessage } from "./UI";
 
 type ValuePiece = Date | null;
 type Value = ValuePiece | [ValuePiece, ValuePiece];
@@ -12,181 +14,118 @@ const CalendarSection = styled.div`
 `;
 
 const StyledCalendar = styled(Calendar)`
-  width: 100% !important;
-  max-width: 100% !important;
-  background: white !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 16px !important;
-  font-family: inherit !important;
-  line-height: 1.125em !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
-  overflow: hidden !important;
+  width: 100%;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-family: inherit;
 
-  /* Navigation */
   .react-calendar__navigation {
-    display: flex !important;
-    height: 60px !important;
-    margin-bottom: 0 !important;
-    background: #f8fafc !important;
-    border-bottom: 1px solid #e2e8f0 !important;
-    padding: 0 16px !important;
+    height: 44px;
+    margin-bottom: 0;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
   }
 
   .react-calendar__navigation button {
-    min-width: 44px !important;
-    background: none !important;
-    font-size: 16px !important;
-    font-weight: 600 !important;
-    color: #4a5568 !important;
-    border-radius: 8px !important;
-    transition: all 0.2s ease !important;
-    margin: 0 !important;
-    border: 0 !important;
-    outline: none !important;
-  }
+    background: none;
+    border: 0;
+    font-size: 16px;
+    color: #4a5568;
+    min-width: 44px;
+    height: 44px;
 
-  .react-calendar__navigation button:enabled:hover,
-  .react-calendar__navigation button:enabled:focus {
-    background-color: #e2e8f0 !important;
-    color: #2d3748 !important;
+    &:hover {
+      background-color: #edf2f7;
+    }
+
+    &:disabled {
+      opacity: 0.3;
+    }
   }
 
   .react-calendar__navigation__label {
-    font-weight: 600 !important;
-    font-size: 18px !important;
-    color: #1a202c !important;
+    font-weight: 600;
+    color: #1a202c;
   }
 
-  /* Weekdays */
   .react-calendar__month-view__weekdays {
-    text-align: center !important;
-    text-transform: uppercase !important;
-    font-weight: 600 !important;
-    font-size: 12px !important;
-    color: #718096 !important;
-    background: #f8fafc !important;
-    padding: 8px 0 !important;
-    border-bottom: 1px solid #e2e8f0 !important;
-    display: flex !important;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    text-transform: uppercase;
+    font-weight: 600;
+    font-size: 11px;
+    color: #718096;
   }
 
   .react-calendar__month-view__weekdays__weekday {
-    flex: 1 !important;
-    padding: 8px 4px !important;
-    text-align: center !important;
+    padding: 12px 0;
+    text-align: center;
+
+    abbr {
+      text-decoration: none;
+    }
   }
 
-  /* Month view */
-  .react-calendar__month-view__days {
-    display: grid !important;
-    grid-template-columns: repeat(7, 1fr) !important;
-    gap: 0 !important;
-  }
-
-  /* Tiles (day buttons) */
   .react-calendar__tile {
-    max-width: 100% !important;
-    padding: 12px 6px !important;
-    background: none !important;
-    text-align: center !important;
-    line-height: 16px !important;
-    font-size: 14px !important;
-    font-weight: 500 !important;
-    color: #2d3748 !important;
-    border-radius: 8px !important;
-    margin: 2px !important;
-    transition: all 0.2s ease !important;
-    position: relative !important;
-    border: 0 !important;
-    outline: none !important;
-  }
+    max-width: 100%;
+    padding: 12px 0;
+    background: none;
+    text-align: center;
+    line-height: 16px;
+    font-size: 14px;
+    color: #2d3748;
+    border: none;
+    position: relative;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-  .react-calendar__tile:enabled:hover,
-  .react-calendar__tile:enabled:focus {
-    background-color: #e3f2fd !important;
-    color: #1976d2 !important;
-    transform: scale(1.05) !important;
-  }
-
-  .react-calendar__tile--now {
-    background: #667eea !important;
-    color: white !important;
-    font-weight: 600 !important;
-  }
-
-  .react-calendar__tile--now:enabled:hover,
-  .react-calendar__tile--now:enabled:focus {
-    background: #5a67d8 !important;
-    color: white !important;
-  }
-
-  .react-calendar__tile--active {
-    background: #4a90e2 !important;
-    color: white !important;
-    font-weight: 600 !important;
-  }
-
-  .react-calendar__tile--active:enabled:hover,
-  .react-calendar__tile--active:enabled:focus {
-    background: #357abd !important;
-    color: white !important;
-  }
-
-  /* Days with bookings indicator */
-  .react-calendar__tile--hasBookings {
-    position: relative !important;
-  }
-
-  .react-calendar__tile--hasBookings::after {
-    content: "" !important;
-    position: absolute !important;
-    bottom: 4px !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    width: 6px !important;
-    height: 6px !important;
-    background: #48bb78 !important;
-    border-radius: 50% !important;
-  }
-
-  .react-calendar__tile--hasBookings.react-calendar__tile--active::after,
-  .react-calendar__tile--hasBookings.react-calendar__tile--now::after {
-    background: white !important;
-  }
-
-  /* Mobile responsiveness */
-  @media (max-width: 768px) {
-    max-width: 100% !important;
-    margin: 0 !important;
-
-    .react-calendar__tile {
-      padding: 8px 4px !important;
-      font-size: 13px !important;
+    &:hover {
+      background-color: #f7fafc;
     }
 
-    .react-calendar__navigation {
-      height: 50px !important;
-      padding: 0 12px !important;
+    &.react-calendar__tile--active {
+      background: #4a90e2;
+      color: white;
     }
 
-    .react-calendar__navigation__label {
-      font-size: 16px !important;
+    &.react-calendar__tile--now {
+      background: #667eea;
+      color: white;
+      font-weight: 600;
+    }
+
+    &.react-calendar__tile--hasBookings::after {
+      content: "";
+      position: absolute;
+      bottom: 4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 4px;
+      background: #48bb78;
+      border-radius: 50%;
+    }
+
+    &.react-calendar__tile--hasBookings.react-calendar__tile--active::after,
+    &.react-calendar__tile--hasBookings.react-calendar__tile--now::after {
+      background: white;
+    }
+
+    &.react-calendar__month-view__days__day--neighboringMonth {
+      color: #a0aec0;
     }
   }
 `;
-
 const CalendarLegend = styled.div`
   display: flex;
   justify-content: center;
-  gap: 16px;
+  gap: 20px;
   margin-top: 16px;
   font-size: 14px;
   color: #718096;
-
-  @media (min-width: 768px) {
-    gap: 24px;
-    font-size: 15px;
-  }
 `;
 
 const LegendItem = styled.div`
@@ -218,23 +157,10 @@ export const StationCalendar = ({
   loading,
   error,
 }: StationCalendarProps) => {
-  // Get bookings for selected date
-  const getBookingsForDate = (date: Date): Booking[] => {
-    return bookings.filter((booking) => {
-      const startDate = new Date(booking.startDate);
-      const endDate = new Date(booking.endDate);
-      return date >= startDate && date <= endDate;
-    });
-  };
-
-  // Check if a date has bookings
-  const hasBookingsOnDate = (date: Date): boolean => {
-    return getBookingsForDate(date).length > 0;
-  };
-
-  // Add custom tile className for days with bookings
   const tileClassName = ({ date }: { date: Date }) => {
-    return hasBookingsOnDate(date) ? "react-calendar__tile--hasBookings" : "";
+    return hasBookingsOnDate(bookings, date)
+      ? "react-calendar__tile--hasBookings"
+      : "";
   };
 
   if (loading) {
@@ -244,18 +170,7 @@ export const StationCalendar = ({
   if (error) {
     return (
       <CalendarSection>
-        <div
-          style={{
-            color: "#e53e3e",
-            padding: "20px",
-            textAlign: "center",
-            background: "#fed7d7",
-            borderRadius: "12px",
-            border: "2px solid #feb2b2",
-          }}
-        >
-          <strong>Error loading calendar:</strong> {error}
-        </div>
+        <ErrorMessage message={`Error loading calendar: ${error}`} />
       </CalendarSection>
     );
   }

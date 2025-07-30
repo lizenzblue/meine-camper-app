@@ -1,40 +1,40 @@
 import React, { forwardRef, memo } from "react";
 import styled from "styled-components";
-import { MdRefresh } from "react-icons/md";
+import { theme } from "../../styles/theme";
 
 const StyledButton = styled.button<{ $variant?: "primary" | "secondary" }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 12px 24px;
+  gap: ${theme.spacing.sm};
+  padding: ${theme.spacing.md} ${theme.spacing["2xl"]};
   border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 500;
+  border-radius: ${theme.borderRadius.sm};
+  font-size: ${theme.typography.fontSizes.base};
+  font-weight: ${theme.typography.fontWeights.medium};
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
+  transition: ${theme.transitions.fast};
 
   ${({ $variant = "primary" }) =>
     $variant === "primary"
       ? `
-        background-color: #4a90e2;
+        background-color: ${theme.colors.primary};
         color: white;
         &:hover {
-          background-color: #357abd;
+          background-color: ${theme.colors.primaryHover};
         }
       `
       : `
         background-color: transparent;
-        color: #4a90e2;
-        border: 1px solid #4a90e2;
+        color: ${theme.colors.primary};
+        border: 1px solid ${theme.colors.primary};
         &:hover {
-          background-color: #f7faff;
+          background-color: ${theme.colors.primaryLight};
         }
       `}
 
   &:focus {
-    outline: 2px solid #4a90e2;
+    outline: 2px solid ${theme.colors.primary};
     outline-offset: 2px;
   }
 
@@ -46,16 +46,14 @@ const StyledButton = styled.button<{ $variant?: "primary" | "secondary" }>`
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary";
-  showIcon?: boolean;
   children: React.ReactNode;
 }
 
 export const Button = memo(
   forwardRef<HTMLButtonElement, ButtonProps>(
-    ({ variant = "primary", showIcon = false, children, ...props }, ref) => {
+    ({ variant = "primary", children, ...props }, ref) => {
       return (
         <StyledButton ref={ref} $variant={variant} {...props}>
-          {showIcon && <MdRefresh size={16} />}
           {children}
         </StyledButton>
       );

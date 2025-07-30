@@ -6,6 +6,8 @@ export interface Booking {
   endDate: string;
 }
 
+export type BookingType = "pickup" | "return";
+
 export interface Station {
   id: string;
   name: string;
