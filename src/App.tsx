@@ -6,7 +6,6 @@ import { BookingProvider } from "./contexts";
 import { APP_CONFIG } from "./constants";
 
 export default function App() {
-  // Set document title from environment variable
   useEffect(() => {
     document.title = APP_CONFIG.TITLE;
   }, []);
